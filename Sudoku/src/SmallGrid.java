@@ -5,29 +5,33 @@ import java.util.List;
 
 public class SmallGrid {
 
-	private int[][] gridArray= {{0,0,0},{0,0,0},{0,0,0}};
+	private Cell[][] gridArray= new Cell[3][3];
 	
 	public SmallGrid(){
-		
+		for(int i =0; i<3; i++){
+			for(int j=0; j<3; j++){
+				gridArray[i][j]=new Cell();
+			}
+		}
 	}
 
 	public void setValue(int x, int y, int change){
 		
-		gridArray[x][y]=change;
+		gridArray[x][y].setvalue(change);
 		
 	}
 	public int getValue(int x, int y){
-		return gridArray[x][y];
+		return gridArray[x][y].getValue();
 	}
 	public boolean valid(){
 		boolean valid = true;
 		List values = new ArrayList();
 		for(int i = 0; i<3;i++){
 			for(int j = 0; j<3; j++){
-				if(values.contains(gridArray[i][j]) || gridArray[i][j]==0){
+				if(values.contains(gridArray[i][j].getValue()) || gridArray[i][j].getValue()==0){
 					valid=false;
 				}else{
-					values.add(gridArray[i][j]);
+					values.add(gridArray[i][j].getValue());
 				}
 			}
 		}
@@ -38,8 +42,8 @@ public class SmallGrid {
 		List notPossible = new ArrayList();
 		for(int i = 0; i<3;i++){
 			for(int j = 0; j<3; j++){
-				if(gridArray[i][j] != 0){
-					notPossible.add(gridArray[i][j]);
+				if(gridArray[i][j].getValue() != 0){
+					notPossible.add(gridArray[i][j].getValue());
 				}
 			}
 		}
@@ -54,5 +58,24 @@ public class SmallGrid {
 		}
 		return possible;
 	
+	}
+	public Cell getCell(int x, int y){
+		return gridArray[x][y];
+	}
+	public void setPossible(int var){
+		for(int i=0; i<3;i++){
+			for(int j=0; j<3; j++){
+				gridArray[i][j].makePossible(var);
+			}
+		}
+		
+	}
+	public void removePossible(int var){
+		for(int i=0; i<3;i++){
+			for(int j=0; j<3; j++){
+				gridArray[i][j].removePossible(var);
+			}
+		}
+		
 	}
 }

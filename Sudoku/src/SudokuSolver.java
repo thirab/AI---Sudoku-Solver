@@ -9,13 +9,12 @@ import java.util.List;
 
 public class SudokuSolver {
 
-	private int count =0;
+	private int count = 0;
 	// Global vars the puzzle, file loaded, total nodes used, and backtracks
 	// that have occured
 	private bigGrid puzzle;
 	private File theInitialPuzzle;
 	private int backtrackCount = 0;
-
 
 	/**
 	 * Create the SudokuSolver which creates a 3x3 big grid made up of 3x3 small
@@ -44,35 +43,75 @@ public class SudokuSolver {
 			String currentLine = br.readLine();
 			String[] lineArray = currentLine.split(" ");
 			for (int j = 0; j < 9; j++) {
-				puzzle.setCellValue(i,j, Integer.parseInt(lineArray[j]));
+				puzzle.setCellValue(i, j, Integer.parseInt(lineArray[j]));
 			}
 		}
 		br.close();
 
 	}
-	
-	public boolean unset(int x, int y){
-		if(puzzle.getCellValue(x, y) == 0){
+
+	public boolean unset(int x, int y) {
+		if (puzzle.getCellValue(x, y) == 0) {
 			return true;
 		}
 		return false;
 	}
 
+	public boolean mostBasic(int row, int col) {
+		int x = row;
+		int y = col;
+		if (puzzleSolved()) {
+			return true;
+		} else if (!unset(x, y)) {
+			if (x < 8) {
+				if (solveBasic(x + 1, y)) {
+					return true;
+				}
+			} else if (x == 8 && y == 8) {
+				solveBasic(0, 0);
+			} else {
+				if (solveBasic(0, y + 1)) {
+					return true;
+				}
+			}
+		} else{
+			for (int i = 0; i < 9; i++) {
+				count++;
+				puzzle.setCellValue(x, y, i);
+				if(puzzle.validAcross(y,i) && puzzle.validSmallGrid(x,y,i) && puzzle.validUpDown(x,i)){
+					return true;
+				}
+				if (nextBasic(x, y)) {
+					return true;
+				} else {
+					backtrackCount++;
+					puzzle.setCellValue(x, y, 0);
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Forward looking, basic
+	 * @param row
+	 * @param col
+	 * @return
+	 */
 	public boolean solveBasic(int row, int col) {
 		// TODO solve the puzzle with forward checking
 		int x = row;
 		int y = col;
 		if (puzzleSolved()) {
 			return true;
-		}else if (!unset(x,y)) {
+		} else if (!unset(x, y)) {
 			if (x < 8) {
 				if (solveBasic(x + 1, y)) {
 					return true;
 				}
-			}else if(x==8 && y==8){
-				solveBasic(0,0);
-			}
-			else {
+			} else if (x == 8 && y == 8) {
+				solveBasic(0, 0);
+			} else {
 				if (solveBasic(0, y + 1)) {
 					return true;
 				}
@@ -82,24 +121,32 @@ public class SudokuSolver {
 			for (int a = 0; a < l.size(); a++) {
 				count++;
 				int testVal = (Integer) l.get(a);
-				
-					puzzle.setCellValue(x,y, testVal);
-					if (next(x, y)) {
-						return true;
-					} else {
-						backtrackCount++;
-						puzzle.setCellValue(x, y, 0);
+
+				puzzle.setCellValue(x, y, testVal);
+				if (next(x, y)) {
+					return true;
+				} else {
+					backtrackCount++;
+					puzzle.setCellValue(x, y, 0);
 				}
 			}
 		}
 		return false;
+	}
+	public boolean nextBasic(int x, int y) {
+		if (x < 8) {
+			return mostBasic(x + 1, y);
+		} else if (x == 8 && y == 8) {
+			return mostBasic(0, 0);
+		}
+		return mostBasic(0, y + 1);
 	}
 
 	public boolean next(int x, int y) {
 		if (x < 8) {
 			return solveBasic(x + 1, y);
 		} else if (x == 8 && y == 8) {
-			return solveBasic(0,0); 
+			return solveBasic(0, 0);
 		}
 		return solveBasic(0, y + 1);
 	}
@@ -115,7 +162,7 @@ public class SudokuSolver {
 		List l = new ArrayList();
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
-				if (puzzle.getCellValue(i,j) == 0) {
+				if (puzzle.getCellValue(i, j) == 0) {
 					List holder = puzzle.validOptions(i, j);
 					if (holder.size() < leastOptions) {
 						x = i;
@@ -128,11 +175,11 @@ public class SudokuSolver {
 		}
 		if (!l.isEmpty()) {
 			for (int a = 0; a < leastOptions; a++) {
-				puzzle.setCellValue(x,y,(Integer) l.get(a));
+				puzzle.setCellValue(x, y, (Integer) l.get(a));
 				count++;
 				if (solveForwardMRV()) {
 					return true;
-				}else{
+				} else {
 					backtrackCount++;
 					puzzle.setCellValue(x, y, 0);
 				}
@@ -154,28 +201,30 @@ public class SudokuSolver {
 		ArrayList<Point> points = new ArrayList<Point>();
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
-				if (unset(i,j)) {
+				if (unset(i, j)) {
 					List holder = puzzle.validOptions(i, j);
 					if (holder.size() < leastOptions) {
 						points.clear();
 						leastOptions = holder.size();
-						points.add(new Point(i,j));
-					}else if(holder.size() == leastOptions){
-						points.add(new Point(i,j));
+						points.add(new Point(i, j));
+					} else if (holder.size() == leastOptions) {
+						points.add(new Point(i, j));
 					}
 				}
 			}
 		}
 		if (!points.isEmpty()) {
-			//TODO select the point in points that has the least constrained value LCV
+			// TODO select the point in points that has the least constrained
+			// value LCV
 			Point p = points.get(0);
 			for (int a = 0; a < points.size(); a++) {
 				count++;
-				List l = puzzle.validOptions((int) p.getX(),(int) p.getY());
-				puzzle.setCellValue((int)p.getX(),(int)p.getY(),(Integer) l.get(a));
+				List l = puzzle.validOptions((int) p.getX(), (int) p.getY());
+				puzzle.setCellValue((int) p.getX(), (int) p.getY(),
+						(Integer) l.get(a));
 				if (solveForwardMRV()) {
 					return true;
-				}else{
+				} else {
 					backtrackCount++;
 				}
 			}
@@ -210,16 +259,14 @@ public class SudokuSolver {
 		for (int i = 0; i < 9; i++) {
 			String line = "";
 			for (int j = 0; j < 9; j++) {
-				line = line
-						+ puzzle.getCellValue(i,j)
-								+ " ";
+				line = line + puzzle.getCellValue(i, j) + " ";
 			}
 			System.out.println(line);
 		}
 	}
 
 	/**
-	 * Puzzle Begins Here
+	 * Puzzle Begins Here, a file is fed in through command line args. The original puzzle is printed out, then the solved puzzle with the time it took, nodes accessed, and backtracks taken.
 	 * 
 	 * @param args
 	 */
@@ -230,8 +277,8 @@ public class SudokuSolver {
 		long startTime = System.currentTimeMillis();
 
 		if (args.length < 4) {
-			//TODO uncomment for command line use
-			//File f = new File(args[0]);
+			// TODO uncomment for command line use
+			// File f = new File(args[0]);
 			File f = new File("easyPuzzle.txt");
 			boolean solved = false;
 			try {
@@ -243,25 +290,26 @@ public class SudokuSolver {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			//TODO remove <=1 set to ==1 , this is for testing
-			if (args.length ==1) {
+			// TODO remove <=1 set to ==1 , this is for testing
+			if (args.length <= 1) {
 				// TODO native backtracking
-				solved = solve.solveBasic(0,0);
+				solved = solve.solveBasic(0, 0);
+				//solved = solve.mostBasic(0, 0);
 
-				}else if ( (args[1].equals("MRV") || args[1].equals("FC"))
+			} else if ((args[1].equals("MRV") || args[1].equals("FC"))
 					&& (args[2].equals("FC") || args[2].equals("MRV"))
 					&& (!args[1].equals(args[2]))) {
 				// TODO with MRV and FC
 				solved = solve.solveForwardMRV();
-			} else if ( args[1].equals("LCV")) {
+			} else if (args[1].equals("LCV")) {
 				solved = solve.solveForwardMRVLVC();
 			} else {
 				System.out
-				.println("You have entered an invalid command! \n you may use no command, MRV FC, FC MRV, or LCV after the filename");
+						.println("You have entered an invalid command! \n you may use no command, MRV FC, FC MRV, or LCV after the filename");
 				System.out
-				.println("Please use the format Java SudokuSolver fileName commandType");
+						.println("Please use the format Java SudokuSolver fileName commandType");
 				System.out
-				.println("The program will now terminate please load again with correct format.");
+						.println("The program will now terminate please load again with correct format.");
 				return;
 			}
 			if (solved) {
@@ -270,15 +318,15 @@ public class SudokuSolver {
 				System.out.println("The puzzle has been solved: ");
 				solve.printPuzzle();
 				System.out
-				.println("The puzzle took the following time to solve (in millis): "
-						+ (endTime - startTime));
+						.println("The puzzle took the following time to solve (in millis): "
+								+ (endTime - startTime));
 				System.out.println("The puzzle was solved after visiting "
 						+ solve.count + " nodes");
 				System.out.println("The puzzle needed to backtrack  "
 						+ solve.backtrackCount + " times to find a solution");
 			} else {
 				System.out
-				.println("I'm sorry but this puzzle could not be solved, it is invalid");
+						.println("I'm sorry but this puzzle could not be solved, it is invalid");
 				System.out.println("Please load a new puzzle and try again");
 				return;
 			}
@@ -287,9 +335,9 @@ public class SudokuSolver {
 
 			System.out.println("You have entered an invalid command");
 			System.out
-			.println("Please use the format Java SudokuSolver fileName commandType");
+					.println("Please use the format Java SudokuSolver fileName commandType");
 			System.out
-			.println("The program will now terminate please load again with correct format.");
+					.println("The program will now terminate please load again with correct format.");
 			return;
 
 		}

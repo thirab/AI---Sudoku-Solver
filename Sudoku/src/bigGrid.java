@@ -13,7 +13,12 @@ public class bigGrid {
 			}
 		}
 	}
-	
+	/**
+	 * get the small grid
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public SmallGrid getSmallGrid(int x, int y){
 		return game[x][y];
 	}
@@ -39,6 +44,13 @@ public class bigGrid {
 		}
 		return valid;
 	}
+	
+	/**
+	 * get A specific Cell value
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public int getCellValue(int x, int y){
 		if(x==0 && y ==0){
 			return game[(x)][y].getValue(x, y);
@@ -50,6 +62,13 @@ public class bigGrid {
 			return game[(int)Math.floor(x/3)][(int)Math.floor(y/3)].getValue(x%3, y%3);
 		}
 	}
+	
+	/**
+	 * Set a cell value
+	 * @param x
+	 * @param y
+	 * @param val
+	 */
 	public void setCellValue(int x, int y, int val){
 		if(x==0 && y ==0){
 			 game[(x)][y].setValue(x, y, val);
@@ -70,6 +89,18 @@ public class bigGrid {
 			return game[(int)Math.floor(x/3)][(y)];
 		}else{
 			return game[(int)Math.floor(x/3)][(int)Math.floor(y/3)];
+		}
+	}
+	
+	public Cell getCell(int x, int y){
+		if(x==0 && y ==0){
+			 return game[(x)][y].getCell(x, y);
+		}else if( x==0){
+			return  game[(x)][(int)Math.floor(y/3)].getCell(x, y%3);
+		}else if( y==0){
+			return game[(int)Math.floor(x/3)][(y)].getCell(x%3, y);
+		}else{
+			return game[(int)Math.floor(x/3)][(int)Math.floor(y/3)].getCell(x%3, y%3);
 		}
 	}
 	public List validUpDownList(int x){
@@ -168,4 +199,25 @@ public class bigGrid {
 		
 		return valid;
 	}
+
+	public void removePossible(int x, int y, int testVal) {
+		// TODO Auto-generated method stub
+		for(int i=0; i<9; i++){
+				getCell(i,y).removePossible(testVal);
+				getCell(x,i).removePossible(testVal);
+		}
+		getGrid(x,y).removePossible(testVal);
+
+	}
+	
+	public void makePossible(int x, int y, int val){
+		for(int i=0; i<9; i++){
+			getCell(i,y).makePossible(val);
+			getCell(x,i).makePossible(val);
+		}
+		getGrid(x,y).setPossible(val);
+		
+
+	}
+	
 }
